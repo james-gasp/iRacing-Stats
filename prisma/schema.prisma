@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// A top-level iRacing series (e.g. "Global Mazda MX-5 Fanatec Cup")
+model Series {
+  id       Int      @id
+  name     String
+  category String // road | oval | dirt_road | dirt_oval
+  license  String?
+  seasons  Season[]
+
+  @@index([category])
+}
+
+/// One season of a series (e.g. "2023 Season 4")
+model Season {
+  id         Int        @id
+  seriesId   Int
+  series     Series     @relation(fields: [seriesId], references: [id])
+  seasonName String
+  year       Int
+  quarter    Int
+  active     Boolean    @default(false)
+  fixedSetup Boolean    @default(false)
+  licenseGroup Int?
+  weeks      RaceWeek[]
+
+  @@index([seriesId])
+}
+
+/// A physical track / layout config
+model Track {
+  id      Int        @id
+  name    String
+  config  String?
+  weeks   RaceWeek[]
+}
+
+/// A car used in a race week (series can be multi-class / fixed car)
+model Car {
+  id   Int    @id
+  name String
+
+  laps LapPoint[]
+}
+
+/// One race week within a season, tied to a single track
+model RaceWeek {
+  id                 Int        @id @default(autoincrement())
+  seasonId           Int
+  season             Season     @relation(fields: [seasonId], references: [id])
+  weekNum            Int
+  trackId            Int
+  track              Track      @relation(fields: [trackId], references: [id])
+  simulatedStartTime DateTime?
+  laps               LapPoint[]
+  ingestRuns         IngestRun[]
+
+  @@unique([seasonId, weekNum])
+  @@index([trackId])
+}
+
+/// A single driver's data point for one lap-time metric in one subsession
+model LapPoint {
+  id          Int      @id @default(autoincrement())
+  raceWeekId  Int
+  raceWeek    RaceWeek @relation(fields: [raceWeekId], references: [id])
+  carId       Int?
+  car         Car?     @relation(fields: [carId], references: [id])
+  subsessionId Int
+  custId      Int
+  lapType     String // qualy | fastest | average
+  irating     Int
+  lapTimeMs   Int
+  createdAt   DateTime @default(now())
+
+  @@unique([subsessionId, custId, lapType, carId])
+  @@index([raceWeekId, lapType])
+}
+
+/// Bookkeeping for ingestion runs so we don't re-pull the same subsessions
+model IngestRun {
+  id                   Int      @id @default(autoincrement())
+  raceWeekId           Int
+  raceWeek             RaceWeek @relation(fields: [raceWeekId], references: [id])
+  runAt                DateTime @default(now())
+  subsessionsProcessed Int
+  status               String // ok | partial | error
+  message              String?
+
+  @@index([raceWeekId])
+}
