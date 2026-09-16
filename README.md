@@ -1,4 +1,4 @@
-# PaceCheck
+# PaceCheck FOR NOW DOES NOT WORK DUE TO IRACING DATA NOT PUBLICLY AVAILABLE 
 
 See how your iRating stacks up against the field's actual lap times, per series, season, and track.
 
