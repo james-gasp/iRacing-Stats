@@ -1,5 +1,7 @@
 # FOR NOW DOES NOT WORK DUE TO IRACING DATA NOT PUBLICLY AVAILABLE 
 
+Maybe when iRacing releases their data again I will continue to develop this.
+
 See how your iRating stacks up against the field's actual lap times, per series, season, and track.
 
 PaceCheck pulls results from the official iRacing Data API and plots each driver's qualifying, fastest-race-lap, and average-race-lap times against their iRating, with a fitted pace curve so you can see roughly what lap time you "should" be running at a given iRating — and enter your own iRating to see where you fall.
